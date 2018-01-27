@@ -12,6 +12,19 @@ import (
 	"github.com/erroneousboat/slack-term/config"
 )
 
+var (
+	COLORS = []string{
+		"fg-black",
+		"fg-red",
+		"fg-green",
+		"fg-yellow",
+		"fg-blue",
+		"fg-magenta",
+		"fg-cyan",
+		"fg-white",
+	}
+)
+
 type Message struct {
 	Time    time.Time
 	Name    string
@@ -24,14 +37,13 @@ type Message struct {
 
 func (m Message) ToString() string {
 	if (m.Time != time.Time{} && m.Name != "") {
-
 		return html.UnescapeString(
 			fmt.Sprintf(
 				"[[%s]](%s) [<%s>](%s) [%s](%s)",
 				m.Time.Format("15:04"),
 				m.StyleTime,
 				m.Name,
-				m.StyleName,
+				m.colorizeName(m.StyleName),
 				m.Content,
 				m.StyleText,
 			),
@@ -41,6 +53,21 @@ func (m Message) ToString() string {
 			fmt.Sprintf("[%s](%s)", m.Content, m.StyleText),
 		)
 	}
+}
+
+func (m Message) colorizeName(styleName string) string {
+	if strings.Contains(styleName, "colorize") {
+		var sum int
+		for _, c := range m.Name {
+			sum = sum + int(c)
+		}
+
+		i := sum % len(COLORS)
+
+		return strings.Replace(m.StyleName, "colorize", COLORS[i], -1)
+	}
+
+	return styleName
 }
 
 // Chat is the definition of a Chat component
